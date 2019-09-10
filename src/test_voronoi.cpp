@@ -30,10 +30,10 @@ Some tests for VoronoiThinner
 
 #include "voronoi.h"
 
-//int codec = CV_FOURCC('M', 'P', '4', '2');
-int codec = CV_FOURCC('M', 'J', 'P', 'G');
+//int codec = cv::FOURCC('M', 'P', '4', '2');
+int codec = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');
 // from http://opencv.willowgarage.com/wiki/VideoCodecs
-//int codec = CV_FOURCC('I', '4', '2', '0'); // uncompressed
+//int codec = cv::FOURCC('I', '4', '2', '0'); // uncompressed
 //int codec = 0;
 
 class VoronoiIterator {
@@ -122,7 +122,7 @@ void generate_video_bw(const cv::Mat1b & query,
   assert(writer.isOpened());
   cv::Mat1b curr_resized;
   cv::resize((show_contour_brighter ? it.contour_brighter(it.first_img()) : it.first_img()),
-             curr_resized, output_size, CV_INTER_NN);
+             curr_resized, output_size, cv::INTER_NEAREST);
   writer << curr_resized;
   cv::imshow("curr_resized", curr_resized); cv::waitKey(10);
 
@@ -130,7 +130,7 @@ void generate_video_bw(const cv::Mat1b & query,
   while (!it.has_converged()) {
     it.iter();
     cv::resize((show_contour_brighter ? it.contour_brighter(it.current_skel()) : it.current_skel()),
-               curr_resized, output_size, CV_INTER_NN);
+               curr_resized, output_size, cv::INTER_NEAREST);
     writer << curr_resized;
     cv::imshow("curr_resized", curr_resized); cv::waitKey(10);
   }
@@ -145,7 +145,7 @@ template<class T>
 void paste_images_gallery(const std::vector<cv::Mat_<T> > & in,
                 cv::Mat_<T> & out,
                 int gallerycols, T background_color,
-                bool draw_borders = false, cv::Scalar border_color = CV_RGB(0,0,0)) {
+                bool draw_borders = false, cv::Scalar border_color = cv::Scalar(0,0,0)) {
   if (in.size() == 0) {
     out.create(0, 0);
     return;
@@ -191,13 +191,13 @@ void generate_video_comparer(const cv::Mat1b & query,
     its[impl_idx].init(query, impls[impl_idx], crop_img_before);
   cv::Mat3b first_img_color;
   // first_img_color = its[0].contour_color(its[0].first_img());
-  cv::cvtColor(its[0].first_img(), first_img_color, CV_GRAY2BGR);
+  cv::cvtColor(its[0].first_img(), first_img_color, cv::COLOR_GRAY2BGR);
   int /*cols1 = first_img_color.cols, */ rows1 = first_img_color.rows;
   //cv::Point text_pos(cols1 / 2, rows1 - 10);
   // image_utils::draw_text_centered
   cv::Point text_pos(10, rows1 - 10);
   cv::putText(first_img_color, "query",
-              text_pos, CV_FONT_HERSHEY_PLAIN, 1, CV_RGB(0, 255, 0));
+              text_pos, cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0, 255, 0));
 
   // video writer
   // for a weird reason, odd width and height result in an empty video
@@ -225,12 +225,12 @@ void generate_video_comparer(const cv::Mat1b & query,
       //image_utils::draw_text_centered
       cv::putText
           (curr_img_color, impls[impl_idx],
-           text_pos, CV_FONT_HERSHEY_PLAIN, 1, CV_RGB(0, 255, 0));
+           text_pos, cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0, 255, 0));
       curr_imgs.push_back(curr_img_color);
     } // end for impl_idx
     // now make collage
-    paste_images_gallery(curr_imgs, curr, gallerycols, cv::Vec3b(0, 0, 0), true, CV_RGB(255, 255, 255));
-    cv::resize(curr, curr_resized, output_size, CV_INTER_NN);
+    paste_images_gallery(curr_imgs, curr, gallerycols, cv::Vec3b(0, 0, 0), true, cv::Scalar(255, 255, 255));
+    cv::resize(curr, curr_resized, output_size, cv::INTER_NEAREST);
     writer << curr_resized;
     cv::imshow("curr", curr); cv::waitKey(10);
     // http://denislantsman.com/?p=111 - save as png too
@@ -319,7 +319,7 @@ void benchmark_logs(const cv::Mat1b & query) {
     // npixels = w * ratio * h * ratio = npixels_curr * ratio^2 -> ratio = sqrt(npixels/npixels_curr)
     double ratio = sqrt(1. * npixels / npixels_curr);
     // printf("npixels:%i, npixels_curr:%i, ratio:%g\n", npixels, npixels_curr, ratio);
-    cv::resize(query, query_resized, cv::Size(), ratio, ratio, CV_INTER_NN);
+    cv::resize(query, query_resized, cv::Size(), ratio, ratio, cv::INTER_NEAREST);
     // use all thinning algos
     unsigned int ntimes = 1;
     std::cout << npixels << " \t";
@@ -388,7 +388,7 @@ int CLI(int argc, char** argv) {
   // load files
   std::vector<cv::Mat1b> files;
   for (int argi = first_file_idx; argi < argc; ++argi) {
-    cv::Mat1b file = cv::imread(argv[argi], CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat1b file = cv::imread(argv[argi], cv::IMREAD_GRAYSCALE);
     if (file.empty())
       printf("Could not load file '%s'\n", argv[argi]);
     else
@@ -441,27 +441,27 @@ int CLI(int argc, char** argv) {
 ////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv) {
-  // benchmark_logs(cv::imread(IMG_DIR "depth/juggling1_user_mask.png", CV_LOAD_IMAGE_GRAYSCALE));
+  // benchmark_logs(cv::imread(IMG_DIR "depth/juggling1_user_mask.png", cv::IMREAD_GRAYSCALE));
 
-  //  generate_video_bw(cv::imread(IMG_DIR "depth/juggling1_user_mask.png", CV_LOAD_IMAGE_GRAYSCALE),
+  //  generate_video_bw(cv::imread(IMG_DIR "depth/juggling1_user_mask.png", cv::IMREAD_GRAYSCALE),
   //                    IMPL_GUO_HALL, true, true);
   //  return 0;
 
-  //  generate_video_bw(cv::imread(IMG_DIR "depth/juggling1_user_mask.png", CV_LOAD_IMAGE_GRAYSCALE),
+  //  generate_video_bw(cv::imread(IMG_DIR "depth/juggling1_user_mask.png", cv::IMREAD_GRAYSCALE),
   //                    IMPL_MORPH, true, true);
   //  return 0;
 
-  //  generate_video_comparer(cv::imread(IMG_DIR "skeletons/horse.png", CV_LOAD_IMAGE_GRAYSCALE),
+  //  generate_video_comparer(cv::imread(IMG_DIR "skeletons/horse.png", cv::IMREAD_GRAYSCALE),
   //                          true, 2, "horse_");
-  //  generate_video_comparer(cv::imread(IMG_DIR "depth/juggling1_user_mask.png", CV_LOAD_IMAGE_GRAYSCALE),
+  //  generate_video_comparer(cv::imread(IMG_DIR "depth/juggling1_user_mask.png", cv::IMREAD_GRAYSCALE),
   //                          true, 4, "comparer_juggling1_mask_");
-  //  generate_video_comparer(cv::imread(IMG_DIR "depth/alberto1_user_mask.png", CV_LOAD_IMAGE_GRAYSCALE),
+  //  generate_video_comparer(cv::imread(IMG_DIR "depth/alberto1_user_mask.png", cv::IMREAD_GRAYSCALE),
   //                          true, 4, "alberto1_mask_");
-  //  generate_video_comparer(cv::imread(IMG_DIR "skeletons/japanese_src.png", CV_LOAD_IMAGE_GRAYSCALE),
+  //  generate_video_comparer(cv::imread(IMG_DIR "skeletons/japanese_src.png", cv::IMREAD_GRAYSCALE),
   //                          true, 2, "comparer_japanese_src_");
-  //  generate_video_comparer(cv::imread(IMG_DIR "skeletons/opencv_src.png", CV_LOAD_IMAGE_GRAYSCALE),
+  //  generate_video_comparer(cv::imread(IMG_DIR "skeletons/opencv_src.png", cv::IMREAD_GRAYSCALE),
   //                          true, 1, "opencv_src_");
-  //  generate_video_comparer(cv::imread(IMG_DIR "powerXML/power.png", CV_LOAD_IMAGE_GRAYSCALE),
+  //  generate_video_comparer(cv::imread(IMG_DIR "powerXML/power.png", cv::IMREAD_GRAYSCALE),
   //                          true, 2, "comparer_power_");
   return CLI(argc, argv);
 }

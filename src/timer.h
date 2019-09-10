@@ -70,7 +70,7 @@ long int timeDifferenceMsec (struct timeval * before, struct timeval * after);
 class Timer {
 public:
   typedef float Time;
-  const static Time NOTIME = -1;
+  constexpr static Time NOTIME = -1;
 
   Timer() {
     reset();

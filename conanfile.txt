@@ -1,0 +1,11 @@
+[requires]
+opencv/4.1.1@conan/stable
+eigen/3.3.7@conan/stable
+gtest/1.8.1@bincrafters/stable
+protobuf/3.6.1@bincrafters/stable
+
+[generators]
+cmake
+
+[options]
+opencv:gtk=3
